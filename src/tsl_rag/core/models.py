@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from enum import StrEnum
 from typing import Any
-from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
@@ -37,10 +36,20 @@ class DocumentMetadata(BaseModel):
     contains_table: bool = False
     contains_penalty: bool = False
     is_definition: bool = False
+    page_start: int | None = None  # ← NOWE
+    page_end: int | None = None  # ← NOWE
+
+
+class Chunk(BaseModel):  # ← NOWA KLASA
+    chunk_id: str = ""
+    text: str
+    metadata: DocumentMetadata
+    embedding: list[float] | None = Field(default=None, repr=False)
+    token_count: int | None = None
 
 
 class DocumentChunk(BaseModel):
-    chunk_id: UUID = Field(default_factory=uuid4)
+    chunk_id: str
     content: str
     metadata: DocumentMetadata
     embedding: list[float] | None = None
@@ -69,7 +78,7 @@ class Citation(BaseModel):
     document_title: str
     article: str | None
     paragraph: str | None
-    chunk_id: UUID
+    chunk_id: str
 
 
 class QueryResponse(BaseModel):

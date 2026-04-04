@@ -1,5 +1,5 @@
 from tsl_rag.core.models import DocumentType, LegalHierarchyLevel
-from tsl_rag.ingestion.legal_chunker import LegalChunker
+from tsl_rag.ingestion.chunkers.legal_chunker import LegalChunker  # ← poprawiony import
 from tsl_rag.ingestion.parsers.legal_pdf_parser import ParsedElement
 
 
@@ -22,14 +22,14 @@ def test_short_article_produces_one_chunk():
 
 
 def test_long_article_splits_and_overlaps():
-    long_text = "Word " * 600  # ~600 tokens
+    long_text = "Word word word. " * 150
+
     chunker = LegalChunker(
         "test_doc", DocumentType.EU_REGULATION, "Test", max_tokens=200, overlap_tokens=40
     )
     elems = [_make_elem(long_text)]
     chunks = chunker.chunk(elems)
     assert len(chunks) >= 3
-    # Overlap: end of chunk N should appear in start of chunk N+1
     end_of_first = chunks[0].text[-100:]
     start_of_second = chunks[1].text[:200]
     assert any(w in start_of_second for w in end_of_first.split()[-5:])
@@ -44,9 +44,7 @@ def test_table_is_never_split():
         article=None,
         page_number=5,
     )
-    chunker = LegalChunker(
-        "test_doc", DocumentType.EU_REGULATION, "Test", max_tokens=10
-    )  # tiny limit — table must survive
+    chunker = LegalChunker("test_doc", DocumentType.EU_REGULATION, "Test", max_tokens=10)
     chunks = chunker.chunk([table_elem])
     assert len(chunks) == 1
     assert chunks[0].metadata.contains_table is True

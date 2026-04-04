@@ -1,20 +1,24 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE TABLE IF NOT EXISTS document_chunks (
-    chunk_id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    content             TEXT NOT NULL,
-    embedding           vector(768),
-    token_count         INTEGER,
-    metadata            JSONB NOT NULL DEFAULT '{}',
+    chunk_id            TEXT PRIMARY KEY,
     document_id         TEXT NOT NULL,
     document_type       TEXT NOT NULL,
+    title               TEXT,
+    jurisdiction        TEXT DEFAULT 'EU',
     chapter             TEXT,
     article             TEXT,
     paragraph           TEXT,
+    hierarchy_level     TEXT,
     contains_table      BOOLEAN DEFAULT FALSE,
     contains_penalty    BOOLEAN DEFAULT FALSE,
     is_definition       BOOLEAN DEFAULT FALSE,
-    jurisdiction        TEXT DEFAULT 'EU',
+    page_start          INTEGER,
+    page_end            INTEGER,
+    text                TEXT NOT NULL,
+    embedding           vector(768),
+    token_count         INTEGER,
+    metadata            JSONB NOT NULL DEFAULT '{}',
     created_at          TIMESTAMPTZ DEFAULT NOW()
 );
 

@@ -25,7 +25,7 @@ from tsl_rag.core.models import (
     DocumentType,
     LegalHierarchyLevel,
 )
-from tsl_rag.ingestion.legal_pdf_parser import ParsedElement
+from tsl_rag.ingestion.parsers.legal_pdf_parser import ParsedElement
 
 # ---------------------------------------------------------------------------
 # Tuneable constants  (override via settings if needed)
@@ -259,8 +259,7 @@ class LegalChunker:
 
                 sub_chunks = self._sentence_split(seg, buf, overlap_tail)
                 if sub_chunks:
-                    chunks.extend(sub_chunks[:-1])
-                    # Keep last sub_chunk as the start of next window
+                    chunks.extend(sub_chunks)  # <--- POPRAWKA (Dodajemy wszystkie)
                     overlap_tail = _last_n_token_chars(sub_chunks[-1].text, self.overlap_tokens)
                     current_parts = []
                     current_tokens = 0
