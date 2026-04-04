@@ -57,9 +57,9 @@ class Settings(BaseSettings):
 
     # Retrieval
     retrieval_top_k: int = 20
-    retrieval_rerank_top_n: int = 5
-    bm25_weight: float = 0.3
-    dense_weight: float = 0.7
+    retrieval_rerank_top_n: int = 7
+    bm25_weight: float = 0.5
+    dense_weight: float = 0.5
 
     # Reranker
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"

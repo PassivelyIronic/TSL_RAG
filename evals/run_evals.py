@@ -115,7 +115,7 @@ async def run_evaluation(output_path: Path | None) -> None:
 
     if output_path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(json.dumps(output, indent=2, ensure_ascii=False))
+        output_path.write_text(json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8")
         logger.info(f"Results saved to {output_path}")
 
 
