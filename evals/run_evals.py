@@ -1,4 +1,3 @@
-# evals/run_evals.py
 """
 Eval harness z opcjonalnym LLM-as-a-Judge (Gemini).
 

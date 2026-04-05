@@ -1,11 +1,3 @@
-"""
-FastAPI router dla zapytań RAG.
-
-Endpoints:
-  POST /query        — główne zapytanie RAG
-  GET  /query/health — sprawdza połączenie z pgvector i Ollama
-"""
-
 from __future__ import annotations
 
 from typing import Annotated
@@ -24,11 +16,6 @@ from tsl_rag.retrieval.retriever import HybridRetriever
 router = APIRouter(prefix="/query", tags=["query"])
 
 
-# ---------------------------------------------------------------------------
-# Request / Response schemas
-# ---------------------------------------------------------------------------
-
-
 class QueryRequest(BaseModel):
     query: str = Field(..., min_length=5, max_length=1000)
     top_k: int = Field(default=20, ge=1, le=50)
@@ -44,21 +31,11 @@ class HealthResponse(BaseModel):
     ollama: str
 
 
-# ---------------------------------------------------------------------------
-# Dependency injection — retriever i generator jako singletons per-request
-# ---------------------------------------------------------------------------
-
-
 async def get_retriever() -> HybridRetriever:
     """Dependency: tworzy i zwraca HybridRetriever."""
     retriever = HybridRetriever()
     await retriever.__aenter__()
     return retriever
-
-
-# ---------------------------------------------------------------------------
-# Endpoints
-# ---------------------------------------------------------------------------
 
 
 @router.post("", response_model=QueryResponse)
@@ -72,7 +49,6 @@ async def query_rag(
     """
     from tsl_rag.core.models import DocumentType
 
-    # Walidacja filter_document_type
     doc_type = None
     if request.filter_document_type:
         try:
@@ -100,8 +76,6 @@ async def query_rag(
 
     generator = RAGGenerator()
     response = await generator.generate(request.query, results)
-
-    # Opcjonalnie zwróć raw chunks (debug mode)
     if request.debug:
         from tsl_rag.core.models import DocumentChunk, RetrievedChunk
 
@@ -131,7 +105,6 @@ async def health_check(
     postgres_status = "ok"
     ollama_status = "ok"
 
-    # Ping pgvector
     try:
         raw_dsn = str(settings.postgres_dsn).replace("postgresql+asyncpg://", "postgresql://")
         conn = await asyncpg.connect(dsn=raw_dsn)
@@ -140,7 +113,6 @@ async def health_check(
     except Exception as e:
         postgres_status = f"error: {e}"
 
-    # Ping Ollama (embed pustego stringa)
     try:
         client = get_llm_client(settings)
         await get_embedding("health check", settings, client)

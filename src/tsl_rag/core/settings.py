@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, PostgresDsn, SecretStr, model_validator
+from pydantic import PostgresDsn, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -50,10 +50,7 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.0
     llm_max_tokens: int = 1024
 
-    # Database
-    postgres_dsn: PostgresDsn = Field(
-        default="postgresql+asyncpg://postgres:postgres@localhost:5432/tsl_rag"
-    )
+    postgres_dsn: PostgresDsn
 
     # Retrieval
     retrieval_top_k: int = 20

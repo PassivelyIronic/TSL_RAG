@@ -161,10 +161,12 @@ with st.sidebar:
     st.markdown("### 📂 Korpus dokumentów")
     docs = {
         "EC 561/2006": "Czas prowadzenia pojazdu",
-        "EU 2020/1054": "Aktualizacja przepisów",
-        "Dyrektywa 2002/15": "Czas pracy kierowców",
-        "Taryfikator kierowca": "Kary dla kierowców",
-        "Taryfikator pracodawca": "Kary dla pracodawców",
+        "EU 165/2014": "Tachografy",
+        "EU 1071 & 1072": "Przewoźnik i kabotaż",
+        "Dyrektywa 2002/15": "Czas pracy (UE)",
+        "Ustawa o czasie pracy": "Czas pracy (Polska)",
+        "Dir. 2020/1057": "Delegowanie kierowców",
+        "Taryfikatory ITD": "Kierowca, Firma, Zarządzający",
         "EU 2016/403": "Klasyfikacja naruszeń",
         "AETR": "Umowa międzynarodowa",
     }

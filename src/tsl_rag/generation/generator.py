@@ -1,15 +1,3 @@
-# src/tsl_rag/generation/generator.py
-"""
-RAG Generator: retrieved chunks → answer z cytowaniami.
-
-Architektura
-------------
-1. Buduje prompt z kontekstem (chunks posortowane po final_score)
-2. Wymusza cytowania w formacie [DOC_ID | Art. X]
-3. Wykrywa "nie wiem" i zwraca has_answer=False zamiast halucynować
-4. Liczy latencję i zwraca pełny QueryResponse
-"""
-
 from __future__ import annotations
 
 import time
@@ -22,9 +10,6 @@ from tsl_rag.core.models import Citation, QueryResponse
 from tsl_rag.core.settings import get_settings
 from tsl_rag.retrieval.retriever import RetrievalResult
 
-# ---------------------------------------------------------------------------
-# System prompt — serce precyzji systemu prawnego (PO POLSKU)
-# ---------------------------------------------------------------------------
 SYSTEM_PROMPT = dedent("""\
     Jesteś specjalistycznym asystentem prawnym ds. zgodności z przepisami
     transportu i logistyki w UE. Odpowiadasz WYŁĄCZNIE po polsku.
@@ -55,11 +40,6 @@ _NO_ANSWER_MARKER = "Nie mogę odpowiedzieć"
 _MAX_CONTEXT_CHARS = 12_000
 
 
-# ---------------------------------------------------------------------------
-# Generator
-# ---------------------------------------------------------------------------
-
-
 class RAGGenerator:
     """
     Generuje odpowiedź na podstawie pytania i listy RetrievalResult.
@@ -79,13 +59,10 @@ class RAGGenerator:
         settings = get_settings()
         client = get_llm_client(settings)
 
-        # 1. Zbuduj blok kontekstu
         context_block, used_results = _build_context(results)
 
-        # 2. Zbuduj user message
         user_message = _build_user_message(query, context_block)
 
-        # 3. Wywołaj LLM
         logger.debug(f"Calling LLM for query: '{query[:80]}'")
         response = await client.chat.completions.create(
             model=settings.active_llm_model,
@@ -101,7 +78,6 @@ class RAGGenerator:
         has_answer = _NO_ANSWER_MARKER not in answer
         latency_ms = int((time.monotonic() - t0) * 1000)
 
-        # 4. Wyekstrahuj cytowania
         citations = _extract_citations(answer, used_results)
 
         logger.info(
@@ -124,11 +100,6 @@ class RAGGenerator:
         )
 
 
-# ---------------------------------------------------------------------------
-# Helpers — budowanie promptu
-# ---------------------------------------------------------------------------
-
-
 def _build_context(
     results: list[RetrievalResult],
 ) -> tuple[str, list[RetrievalResult]]:
@@ -145,7 +116,6 @@ def _build_context(
         chunk = result.chunk
         m = chunk.metadata
 
-        # Nagłówek cytowania
         header_parts = [m.document_id]
         if m.article:
             header_parts.append(f"Art. {m.article}")
@@ -179,11 +149,6 @@ def _build_user_message(query: str, context: str) -> str:
     """)
 
 
-# ---------------------------------------------------------------------------
-# Helpers — ekstrakcja cytowań
-# ---------------------------------------------------------------------------
-
-
 def _extract_citations(
     answer: str,
     used_results: list[RetrievalResult],
@@ -194,13 +159,11 @@ def _extract_citations(
     """
     import re
 
-    # Buduj lookup: document_id → result
     by_doc: dict[str, list[RetrievalResult]] = {}
     for r in used_results:
         did = r.chunk.metadata.document_id
         by_doc.setdefault(did, []).append(r)
 
-    # Znajdź wszystkie cytowania w odpowiedzi
     pattern = re.compile(r"\[([^\]]+)\]")
     seen: set[str] = set()
     citations: list[Citation] = []
@@ -214,7 +177,6 @@ def _extract_citations(
         parts = [p.strip() for p in raw.split("|")]
         doc_id = parts[0].lower().replace(" ", "_")
 
-        # Znajdź najlepiej pasujący chunk dla tego doc_id
         candidates = by_doc.get(doc_id, [])
         chunk = candidates[0].chunk if candidates else None
 
@@ -227,7 +189,7 @@ def _extract_citations(
                 document_title=chunk.metadata.title,
                 article=chunk.metadata.article,
                 paragraph=chunk.metadata.paragraph,
-                chunk_id=chunk.chunk_id,  # type: ignore[arg-type]
+                chunk_id=chunk.chunk_id,
             )
         )
 
