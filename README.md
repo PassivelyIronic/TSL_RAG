@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # TSL-RAG — EU Transport & Logistics Legal Assistant
 
 A Retrieval-Augmented Generation (RAG) system designed to navigate, query, and cite European and Polish road transport laws.
@@ -225,3 +226,6 @@ uv run pytest tests/unit/ -v
 ## License
 
 MIT
+=======
+
+>>>>>>> 55f77bbca913ff3bc983edbc5482a44f48dd238d
