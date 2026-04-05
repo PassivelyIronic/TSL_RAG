@@ -29,6 +29,7 @@ dependencies = [
     "tiktoken>=0.7.0",
     "typer>=0.24.1",
     "streamlit>=1.56.0",
+    "google-genai>=1.70.0",
 ]
 
 [project.optional-dependencies]
@@ -87,3 +88,6 @@ markers = [
     "integration: requires postgres",
     "e2e: full stack",
 ]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["typer.Option", "typer.Argument", "fastapi.Depends", "fastapi.Query"]
