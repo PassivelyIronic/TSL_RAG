@@ -228,13 +228,6 @@ uv run pytest tests/unit/ -v
 # 11 passed — no external dependencies required
 ```
 
-## Roadmap
-
-- [ ] OCR pre-processing for scanned penalty tariff PDFs
-- [ ] Streaming generation in FastAPI + Streamlit
-- [ ] Integration tests with `pytest-asyncio` against a test database
-- [ ] Docker Compose profile for full-stack local deployment (Ollama included)
-
 ## License
 
 MIT
