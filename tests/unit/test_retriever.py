@@ -1,4 +1,3 @@
-# tests/unit/test_retriever.py
 from tsl_rag.core.models import Chunk, DocumentMetadata, DocumentType, LegalHierarchyLevel
 from tsl_rag.retrieval.retriever import _reciprocal_rank_fusion, _tokenize
 

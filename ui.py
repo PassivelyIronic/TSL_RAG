@@ -1,4 +1,6 @@
 # ui.py
+import os
+
 import httpx
 import streamlit as st
 
@@ -10,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-API_URL = "http://localhost:8000/query"
+API_URL = os.getenv("API_URL", "http://localhost:8000/query")
 
 # ── Custom CSS ─────────────────────────────────────────────────────────────
 st.markdown(
@@ -159,22 +161,27 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("### 📂 Korpus dokumentów")
-    docs = {
-        "EC 561/2006": "Czas prowadzenia pojazdu",
-        "EU 165/2014": "Tachografy",
-        "EU 1071 & 1072": "Przewoźnik i kabotaż",
-        "Dyrektywa 2002/15": "Czas pracy (UE)",
-        "Ustawa o czasie pracy": "Czas pracy (Polska)",
-        "Dir. 2020/1057": "Delegowanie kierowców",
-        "Taryfikatory ITD": "Kierowca, Firma, Zarządzający",
-        "EU 2016/403": "Klasyfikacja naruszeń",
-        "AETR": "Umowa międzynarodowa",
-    }
-    for doc, desc in docs.items():
+
+    # Dynamiczne pobieranie listy dokumentów z backendu
+    try:
+        docs_resp = httpx.get(f"{API_URL}/documents", timeout=3.0)
+        if docs_resp.status_code == 200:
+            docs = docs_resp.json()
+            for doc_id, title in docs.items():
+                st.markdown(
+                    f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.72rem;'
+                    f'color:#58a6ff;margin-bottom:0.2rem">{doc_id}</div>'
+                    f'<div style="font-size:0.75rem;color:#6e7681;margin-bottom:0.6rem">{title}</div>',
+                    unsafe_allow_html=True,
+                )
+        else:
+            st.markdown(
+                '<div style="font-size:0.75rem;color:#6e7681;">Brak listy (błąd API)</div>',
+                unsafe_allow_html=True,
+            )
+    except Exception:
         st.markdown(
-            f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.72rem;'
-            f'color:#58a6ff;margin-bottom:0.2rem">{doc}</div>'
-            f'<div style="font-size:0.75rem;color:#6e7681;margin-bottom:0.6rem">{desc}</div>',
+            '<div style="font-size:0.75rem;color:#6e7681;">Oczekiwanie na API...</div>',
             unsafe_allow_html=True,
         )
 

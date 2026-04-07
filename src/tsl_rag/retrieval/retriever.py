@@ -33,9 +33,7 @@ from tsl_rag.core.models import (
 from tsl_rag.core.settings import get_settings
 from tsl_rag.retrieval.reranker import CrossEncoderReranker
 
-# ---------------------------------------------------------------------------
 # Typy wewnętrzne
-# ---------------------------------------------------------------------------
 
 
 @dataclass
@@ -83,11 +81,6 @@ ORDER BY chunk_id;
 """
 
 
-# ---------------------------------------------------------------------------
-# Główna klasa
-# ---------------------------------------------------------------------------
-
-
 class HybridRetriever:
     """
     Hybrid retriever z lazy-loaded BM25 i cross-encoder rerankerem.
@@ -118,9 +111,7 @@ class HybridRetriever:
         if self._pool:
             await self._pool.close()
 
-    # ------------------------------------------------------------------
     # Public API
-    # ------------------------------------------------------------------
 
     async def retrieve(self, request: RetrievalRequest) -> list[RetrievalResult]:
         """
@@ -169,9 +160,7 @@ class HybridRetriever:
         )
         return candidates
 
-    # ------------------------------------------------------------------
     # Dense search
-    # ------------------------------------------------------------------
 
     async def _dense_search(
         self,
@@ -204,9 +193,7 @@ class HybridRetriever:
             for row in rows
         ]
 
-    # ------------------------------------------------------------------
     # BM25 search
-    # ------------------------------------------------------------------
 
     async def _ensure_bm25_index(self) -> None:
         """Buduje BM25 index przy pierwszym wywołaniu (lazy)."""
@@ -241,9 +228,7 @@ class HybridRetriever:
             if scores[i] > 0  # pomiń zerowe dopasowania
         ]
 
-    # ------------------------------------------------------------------
     # Rerank
-    # ------------------------------------------------------------------
 
     def _apply_rerank(
         self,
@@ -264,9 +249,7 @@ class HybridRetriever:
         return reranked
 
 
-# ---------------------------------------------------------------------------
 # RRF fusion
-# ---------------------------------------------------------------------------
 
 
 def _reciprocal_rank_fusion(
@@ -300,11 +283,6 @@ def _reciprocal_rank_fusion(
         by_id[cid].rrf_score = rrf_score
 
     return sorted(by_id.values(), key=lambda r: r.rrf_score, reverse=True)
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 
 def _tokenize(text: str) -> list[str]:

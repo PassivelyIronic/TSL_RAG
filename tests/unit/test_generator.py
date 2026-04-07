@@ -1,4 +1,3 @@
-# tests/unit/test_generator.py
 from tsl_rag.core.models import (
     Chunk,
     DocumentMetadata,

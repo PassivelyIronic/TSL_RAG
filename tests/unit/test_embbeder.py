@@ -1,4 +1,3 @@
-# tests/unit/test_embedder.py
 from tsl_rag.core.models import Chunk, DocumentMetadata, DocumentType, LegalHierarchyLevel
 from tsl_rag.ingestion.embedders.embedder import _chunk_to_record, _make_batches
 

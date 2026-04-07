@@ -21,8 +21,9 @@ SYSTEM_PROMPT = dedent("""\
     2. Po każdym fakcie MUSISZ dodać cytowanie w formacie:
        [id_dokumentu | Art. X] lub [id_dokumentu | ust. Y]
        Przykład: "Dzienny czas jazdy nie może przekroczyć 9 godzin. [ec_561_2006 | Art. 6]"
-    3. Jeśli kontekst nie zawiera wystarczających informacji, odpowiedz DOKŁADNIE:
+    3. Jeśli kontekst CAŁKOWICIE nie pozwala na udzielenie odpowiedzi, napisz TYLKO I WYŁĄCZNIE:
        "Nie mogę odpowiedzieć na to pytanie na podstawie dostępnych dokumentów."
+       BEZWZGLĘDNY ZAKAZ: Jeśli udzieliłeś jakiejkolwiek odpowiedzi (nawet częściowej), NIE dodawaj tej frazy na końcu!
     4. Nie zmieniaj znaczenia prawnego podczas parafrazowania.
     5. Gdy przepisy różnych dokumentów są sprzeczne, podaj OBA i wskaż
        który ma pierwszeństwo (Rozporządzenie UE > Dyrektywa > AETR).
@@ -169,7 +170,7 @@ def _extract_citations(
     citations: list[Citation] = []
 
     for match in pattern.finditer(answer):
-        raw = match.group(1)  # "ec_561_2006 | Art. 6(1)"
+        raw = match.group(1)
         if raw in seen:
             continue
         seen.add(raw)

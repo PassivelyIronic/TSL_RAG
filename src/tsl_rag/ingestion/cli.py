@@ -1,4 +1,3 @@
-# src/tsl_rag/ingestion/cli.py
 """
 CLI do ingestion: PDF → parse → chunk → embed → pgvector.
 
@@ -194,10 +193,6 @@ async def _run_pipeline(
     )
     return stats
 
-
-# ---------------------------------------------------------------------------
-# Entrypoint
-# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     app()

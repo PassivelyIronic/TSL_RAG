@@ -1,16 +1,3 @@
-"""
-Semantic chunker for parsed legal documents.
-
-Design rules
-------------
-* Tables  → always one atomic chunk (never split).
-* Article boundaries are hard boundaries — chunks never span articles.
-* Short articles (< MIN_TOKENS) are merged with the next article
-  unless the next belongs to a different chapter.
-* Long articles are split with a token-based sliding window + text overlap.
-* Every chunk carries full DocumentMetadata for pgvector pre-filtering.
-"""
-
 from __future__ import annotations
 
 import re
@@ -27,15 +14,10 @@ from tsl_rag.core.models import (
 )
 from tsl_rag.ingestion.parsers.legal_pdf_parser import ParsedElement
 
-# ---------------------------------------------------------------------------
-# Tuneable constants  (override via settings if needed)
-# ---------------------------------------------------------------------------
-MAX_TOKENS: int = 450  # hard ceiling per chunk
-MIN_TOKENS: int = 60  # below this → merge with neighbour
-OVERLAP_TOKENS: int = 60  # look-back window for context continuity
+MAX_TOKENS: int = 450
+MIN_TOKENS: int = 60
+OVERLAP_TOKENS: int = 60
 
-# Rough chars-per-token for EU legal English/Polish (conservative estimate).
-# Real tokeniser would be more accurate but adds a heavy dependency.
 _CHARS_PER_TOKEN: float = 4.2
 
 
@@ -44,20 +26,12 @@ def _approx_tokens(text: str) -> int:
 
 
 def _last_n_token_chars(text: str, n_tokens: int) -> str:
-    """Return the last ~n_tokens worth of characters from *text*."""
     chars = int(n_tokens * _CHARS_PER_TOKEN)
     return text[-chars:] if len(text) > chars else text
 
 
-# ---------------------------------------------------------------------------
-# Public dataclass for intermediate grouping (internal to this module)
-# ---------------------------------------------------------------------------
-
-
 @dataclass
 class _ArticleBuffer:
-    """Accumulates ParsedElements belonging to one article before chunking."""
-
     chapter: str | None
     article: str | None
     elements: list[ParsedElement] = field(default_factory=list)
@@ -76,27 +50,7 @@ class _ArticleBuffer:
         return (min(pages), max(pages)) if pages else (None, None)
 
 
-# ---------------------------------------------------------------------------
-# Main chunker class
-# ---------------------------------------------------------------------------
-
-
 class LegalChunker:
-    """
-    Converts a flat list of ParsedElement objects into semantically coherent
-    Chunk objects ready for embedding and storage in pgvector.
-
-    Usage
-    -----
-    chunker = LegalChunker(
-        document_id="ec_561_2006",
-        document_type=DocumentType.EU_REGULATION,
-        document_title="Regulation (EC) No 561/2006",
-        jurisdiction="EU",
-    )
-    chunks = chunker.chunk(parsed_elements)
-    """
-
     def __init__(
         self,
         document_id: str,
@@ -114,10 +68,6 @@ class LegalChunker:
         self.max_tokens = max_tokens
         self.min_tokens = min_tokens
         self.overlap_tokens = overlap_tokens
-
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
 
     def chunk(self, elements: Sequence[ParsedElement]) -> list[Chunk]:
         """
@@ -139,10 +89,6 @@ class LegalChunker:
             f"{len(buffers)} article buffers → {len(chunks)} chunks"
         )
         return chunks
-
-    # ------------------------------------------------------------------
-    # Step 1 — group ParsedElements by article
-    # ------------------------------------------------------------------
 
     def _group_into_article_buffers(
         self, elements: Sequence[ParsedElement]
@@ -175,10 +121,6 @@ class LegalChunker:
 
         return buffers
 
-    # ------------------------------------------------------------------
-    # Step 2 — merge very short buffers with their successor
-    # ------------------------------------------------------------------
-
     def _merge_short_buffers(self, buffers: list[_ArticleBuffer]) -> list[_ArticleBuffer]:
         if not buffers:
             return buffers
@@ -194,7 +136,6 @@ class LegalChunker:
                 i += 1
                 continue
 
-            # If too short AND next buffer exists AND same chapter AND not table
             if (
                 current.tokens() < self.min_tokens
                 and i + 1 < len(buffers)
@@ -217,10 +158,6 @@ class LegalChunker:
 
         return merged
 
-    # ------------------------------------------------------------------
-    # Step 3 — split individual buffers into token-bounded chunks
-    # ------------------------------------------------------------------
-
     def _split_buffer(self, buf: _ArticleBuffer) -> list[Chunk]:
         """
         If the buffer fits within max_tokens → one chunk.
@@ -235,9 +172,6 @@ class LegalChunker:
         if _approx_tokens(full_text) <= self.max_tokens:
             return [self._make_chunk(full_text, buf)]
 
-        # --- Sliding window split ---
-        # Split on double newlines (paragraph separators) first,
-        # then fall back to sentence boundaries.
         segments = re.split(r"\n{2,}", full_text)
         chunks: list[Chunk] = []
         current_parts: list[str] = []
@@ -309,10 +243,6 @@ class LegalChunker:
 
         return chunks
 
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
-
     def _make_chunk(
         self,
         text: str,
@@ -342,5 +272,5 @@ class LegalChunker:
             page_start=page_start,
             page_end=page_end,
         )
-        # chunk_id is assigned later in chunk() with a stable index
+
         return Chunk(chunk_id="", text=text, metadata=metadata)

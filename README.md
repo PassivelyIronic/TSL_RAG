@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # TSL-RAG — EU Transport & Logistics Legal Assistant
 
 A Retrieval-Augmented Generation (RAG) system designed to navigate, query, and cite European and Polish road transport laws.
@@ -48,7 +47,6 @@ Generic RAG systems relying solely on flat vector search often fail to retrieve 
                 │
                 ▼
      FastAPI  ←→  Streamlit UI
-```
 
 ## Tech Stack
 
@@ -89,15 +87,15 @@ A RAG system without an eval harness is an incomplete project. This system ships
 **Method 1 — Keyword match (fast, offline):**
 ```
 Questions      : 15
-Answer score   : 0.500   (key facts present)
-Citation hit   : 0.767   (correct doc cited)
-Refusal prec.  : 0.500   (out-of-scope correctly refused)
-Avg latency    : ~10 s
+Answer score   : 0.633   (key facts present)
+Citation hit   : 0.667   (correct doc cited)
+Refusal prec.  : 1.000   (out-of-scope correctly refused)
+Avg latency    : ~8.3 s
 
 Per category:
-  numeric_fact    n=9   fact=0.83  cite=0.89  ✅
+  numeric_fact    n=9   fact=0.83  cite=0.77  ✅
   out_of_scope    n=2   fact=1.00  cite=1.00  ✅
-  penalty         n=1   fact=0.00  cite=0.00  ← scanned PDF, OCR needed
+  penalty         n=1   fact=0.00  cite=0.00  ← complex table understanding
 ```
 
 **Method 2 — LLM-as-a-Judge (Gemini 2.0 Flash):**
@@ -113,7 +111,7 @@ uv run python -m evals.run_evals --use-judge --output evals/results/run_001_judg
 ```
 
 **Known limitations (documented, not hidden):**
-- Penalty tariff PDFs are scanned images — OCR required for full coverage. Parser correctly returns 0 table chunks; system falls back gracefully.
+- Penalty tariff PDFs are scanned images — OCR required for full coverage. Parser correctly returns 0 table chunks; system falls back gracefully. (It've been done on used files)
 - Latency ~10s on RTX 4060 with llama3.1 8B Q4. Acceptable for compliance tooling.
 
 ## Quick Start
@@ -164,7 +162,19 @@ uv run python main.py
 # Terminal 2 — Frontend UI
 uv run streamlit run ui.py
 # → http://localhost:8501
+
+or
+
+# Terminal 1 — Backend API
+make api
+# → http://localhost:8000/docs
+
+# Terminal 2 — Frontend UI
+make ui
+# → http://localhost:8501
 ```
+
+
 
 ## Project Structure
 
@@ -185,9 +195,11 @@ tsl-rag/
 │   │   └── reranker.py          # CrossEncoder wrapper (lazy-loaded)
 │   ├── generation/
 │   │   └── generator.py         # System prompt, citation extraction
-│   └── api/
-│       ├── app.py               # FastAPI factory
-│       └── routers/query.py     # POST /query, GET /query/health
+│   ├── api/
+│   │   ├── main.py              # FastAPI factory and entrypoint
+│   │   └── routers/query.py     # POST /query, GET /query/health
+│   └── ui/
+│       └── app.py               # Streamlit chat UI with retrieval debug panel
 ├── evals/
 │   ├── golden_dataset/questions.py   # 15 questions × 6 categories
 │   ├── judge.py                      # GeminiJudge — LLM-as-a-Judge
@@ -195,7 +207,7 @@ tsl-rag/
 ├── tests/unit/                  # 11 unit tests, no external dependencies
 ├── docker/init.sql              # pgvector schema, HNSW index, corpus_stats view
 ├── docker-compose.yml
-├── ui.py                        # Streamlit chat UI with retrieval debug panel
+├── Makefile                     # Shortcut commands runner
 └── pyproject.toml
 ```
 
@@ -227,5 +239,3 @@ uv run pytest tests/unit/ -v
 
 MIT
 =======
-
->>>>>>> 55f77bbca913ff3bc983edbc5482a44f48dd238d

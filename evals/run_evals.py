@@ -57,11 +57,9 @@ async def evaluate_question(
     is_out_of_scope = question.category == "out_of_scope"
     is_refused = _is_refusal(response.answer) or not response.has_answer
 
-    # ── Answer score ──────────────────────────────────────────────────────
     judge_reasoning = None
 
     if is_out_of_scope:
-        # out-of-scope: poprawna odmowa = 1.0, halucynacja = 0.0
         answer_score = 1.0 if is_refused else 0.0
         judge_reasoning = (
             "out_of_scope: odmowa poprawna" if is_refused else "out_of_scope: halucynacja"
@@ -82,7 +80,6 @@ async def evaluate_question(
         fact_hits = sum(1 for f in key_facts if f in answer_lower)
         answer_score = fact_hits / len(key_facts) if key_facts else 1.0
 
-    # ── Citation score ────────────────────────────────────────────────────
     cited_docs = {c.document_id for c in response.citations}
     expected_set = set(question.expected_docs)
     citation_hit = len(cited_docs & expected_set) / len(expected_set) if expected_set else 1.0
@@ -122,6 +119,10 @@ async def run_evaluation(output_path: Path | None, use_judge: bool) -> None:
             result = await evaluate_question(question, retriever, generator, judge)
             results_list.append(result)
             _print_result(result)
+
+            if use_judge and i < len(GOLDEN_DATASET) - 1:
+                logger.info("⏳ Czekam 5 sekund na zresetowanie limitów Gemini API...")
+                await asyncio.sleep(5)
 
     summary = _aggregate(results_list)
     _print_summary(summary, use_judge)
@@ -207,7 +208,6 @@ def _print_summary(s: dict, use_judge: bool) -> None:
     print("=" * 65)
 
 
-# Potrzebne dla _print_summary gdy use_judge=False
 from evals.judge import GeminiJudge as _GJ  # noqa: E402
 
 GeminiJudge = _GJ

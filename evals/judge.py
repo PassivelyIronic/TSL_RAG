@@ -1,13 +1,3 @@
-# evals/judge.py
-"""
-LLM-as-a-Judge używający Gemini 2.0 Flash do oceny odpowiedzi RAG.
-
-Dlaczego osobny moduł:
-- Testowalny niezależnie od reszty pipeline
-- Można podmienić model bez ruszania run_evals.py
-- Graceful degradation: jeśli Gemini niedostępny → fallback do keyword match
-"""
-
 from __future__ import annotations
 
 import asyncio
@@ -19,7 +9,7 @@ from loguru import logger
 class GeminiJudge:
     """
     Ocenia odpowiedź RAG w skali 0.0–1.0.
-    Rozumie synonimy, różne sformułowania, liczby zapisane słownie.
+    Rozumie synonimy, sformułowania, liczby zapisane słownie.
 
     Usage
     -----
@@ -78,11 +68,6 @@ class GeminiJudge:
                 # Jeśli to inny błąd lub wyczerpano próby:
                 logger.error(f"Gemini Judge error: {exc}")
                 return 0.0, f"judge_error: {exc}"
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 
 def _build_judge_prompt(question: str, expected: str, actual: str) -> str:

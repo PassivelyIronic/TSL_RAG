@@ -121,3 +121,15 @@ async def health_check(
 
     overall = "ok" if postgres_status == "ok" and ollama_status == "ok" else "degraded"
     return HealthResponse(status=overall, postgres=postgres_status, ollama=ollama_status)
+
+
+@router.get("/documents")
+async def get_documents() -> dict[str, str]:
+    """
+    Zwraca listę obsługiwanych dokumentów.
+    Dzięki temu UI nie musi mieć ich zaszytych na sztywno.
+    """
+    from tsl_rag.ingestion.cli import DOCUMENT_REGISTRY
+
+    # Tworzymy prosty słownik { "ID_DOKUMENTU": "Tytuł dokumentu" }
+    return {doc_id: meta["title"] for doc_id, meta in DOCUMENT_REGISTRY.items()}

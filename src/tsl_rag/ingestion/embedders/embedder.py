@@ -1,13 +1,3 @@
-"""
-Batch embedder: Chunk list → embeddings via Ollama → upsert do pgvector.
-
-Odpowiedzialność tego modułu:
-- Batchowanie chunków (żeby nie zabić Ollamy jednym requestem)
-- Delegowanie HTTP do llm_client.get_embeddings_batch
-- Upsert do pgvector z pełnymi metadanymi
-- Progress bar + statystyki
-"""
-
 from __future__ import annotations
 
 import json
@@ -67,8 +57,6 @@ class ChunkEmbedder:
         self._settings = get_settings()
         self._client = get_llm_client(self._settings)
 
-        # PostgresDsn z pydantic ma format postgresql+asyncpg://...
-        # asyncpg wymaga czystego postgresql://
         raw_dsn = str(self._settings.postgres_dsn).replace("postgresql+asyncpg://", "postgresql://")
         self._pool = await asyncpg.create_pool(
             dsn=raw_dsn,
@@ -80,10 +68,6 @@ class ChunkEmbedder:
     async def __aexit__(self, *_: object) -> None:
         if self._pool:
             await self._pool.close()
-
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
 
     async def embed_and_store(self, chunks: Sequence[Chunk]) -> dict:
         if not chunks:
@@ -106,7 +90,7 @@ class ChunkEmbedder:
                 embeddings = await get_embeddings_batch(
                     texts,
                     self._settings,
-                    self._client,  # ← poprawiona sygnatura
+                    self._client,
                 )
             except Exception as exc:
                 logger.error(f"Embedding batch failed: {exc}")
@@ -131,9 +115,7 @@ class ChunkEmbedder:
         logger.info(f"Embedding complete: {stats}")
         return stats
 
-    # ------------------------------------------------------------------
     # pgvector upsert
-    # ------------------------------------------------------------------
 
     async def _upsert_batch(self, batch: Sequence[Chunk]) -> int:
         assert self._pool is not None, "Call inside async context manager"
@@ -151,9 +133,7 @@ class ChunkEmbedder:
             return 0
 
 
-# ---------------------------------------------------------------------------
 # Helpers
-# ---------------------------------------------------------------------------
 
 
 def _make_batches(items: list[Chunk], size: int) -> list[list[Chunk]]:
