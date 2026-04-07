@@ -1,6 +1,6 @@
 # TSL-RAG — EU Transport & Logistics Legal Assistant
 
-A Retrieval-Augmented Generation (RAG) system designed to navigate, query, and cite European and Polish road transport laws.
+A Retrieval-Augmented Generation (RAG) system designed to navigate, query, and cite European and Polish road transport laws. Designed and implemented for Artrans.
 
 ## The Problem
 Transport law spans multiple overlapping regulations (e.g., EC 561/2006, AETR, Dir. 2002/15, and national penalty tariffs). A compliance officer asking *"Can a driver extend their daily rest if they're on a ferry?"* requires an answer that is legally accurate, cites the correct article, and respects document hierarchy.
