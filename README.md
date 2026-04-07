@@ -47,6 +47,7 @@ Generic RAG systems relying solely on flat vector search often fail to retrieve 
                 │
                 ▼
      FastAPI  ←→  Streamlit UI
+```
 
 ## Tech Stack
 
